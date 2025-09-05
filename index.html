@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IT Ticketing System</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #34495e;
+            --gray: #95a5a6;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem 0;
+            margin-bottom: 2rem;
+            border-radius: 5px;
+        }
+        
+        header h1 {
+            text-align: center;
+            font-size: 2rem;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            background: white;
+            border-radius: 5px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .tab-button {
+            padding: 12px 20px;
+            background: white;
+            border: none;
+            flex: 1;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .tab-button.active {
+            background: var(--secondary);
+            color: white;
+        }
+        
+        .tab-button:hover:not(.active) {
+            background: var(--light);
+        }
+        
+        .tab-content {
+            display: none;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        button {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: var(--primary);
+        }
+        
+        .ticket-list {
+            list-style: none;
+        }
+        
+        .ticket-item {
+            background: white;
+            border-left: 4px solid var(--secondary);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            box-shadow: 0 2px 3px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .ticket-info h3 {
+            margin-bottom: 5px;
+            color: var(--dark);
+        }
+        
+        .ticket-meta {
+            color: var(--gray);
+            font-size: 14px;
+        }
+        
+        .ticket-status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .status-open {
+            background: var(--success);
+            color: white;
+        }
+        
+        .status-pending {
+            background: var(--warning);
+            color: white;
+        }
+        
+        .status-closed {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .priority-high {
+            border-left-color: var(--danger);
+        }
+        
+        .priority-medium {
+            border-left-color: var(--warning);
+        }
+        
+        .priority-low {
+            border-left-color: var(--success);
+        }
+        
+        .search-bar {
+            margin-bottom: 20px;
+            display: flex;
+        }
+        
+        .search-bar input {
+            flex: 1;
+            margin-right: 10px;
+        }
+        
+        .filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .filters select {
+            flex: 1;
+        }
+        
+        @media (max-width: 768px) {
+            .ticket-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .ticket-status {
+                margin-top: 10px;
+            }
+            
+            .filters {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>IT Help Desk Ticketing System</h1>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="tabs">
+            <button class="tab-button active" data-tab="submit">Submit Ticket</button>
+            <button class="tab-button" data-tab="tickets">View Tickets</button>
+            <button class="tab-button" data-tab="search">Search</button>
+        </div>
+        
+        <div id="submit" class="tab-content active">
+            <h2>Submit New Ticket</h2>
+            <form id="ticket-form">
+                <div class="form-group">
+                    <label for="name">Your Name</label>
+                    <input type="text" id="name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="department">Department</label>
+                    <select id="department" required>
+                        <option value="">Select Department</option>
+                        <option value="IT">IT</option>
+                        <option value="HR">HR</option>
+                        <option value="Finance">Finance</option>
+                        <option value="Operations">Operations</option>
+                        <option value="Sales">Sales</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="priority">Priority</label>
+                    <select id="priority" required>
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="subject">Subject</label>
+                    <input type="text" id="subject" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" required></textarea>
+                </div>
+                
+                <button type="submit">Submit Ticket</button>
+            </form>
+        </div>
+        
+        <div id="tickets" class="tab-content">
+            <h2>All Tickets</h2>
+            
+            <div class="filters">
+                <select id="status-filter">
+                    <option value="all">All Statuses</option>
+                    <option value="open">Open</option>
+                    <option value="pending">Pending</option>
+                    <option value="closed">Closed</option>
+                </select>
+                
+                <select id="priority-filter">
+                    <option value="all">All Priorities</option>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                </select>
+                
+                <select id="department-filter">
+                    <option value="all">All Departments</option>
+                    <option value="IT">IT</option>
+                    <option value="HR">HR</option>
+                    <option value="Finance">Finance</option>
+                    <option value="Operations">Operations</option>
+                    <option value="Sales">Sales</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            
+            <ul id="ticket-list" class="ticket-list">
+                <!-- Tickets will be displayed here -->
+            </ul>
+        </div>
+        
+        <div id="search" class="tab-content">
+            <h2>Search Tickets</h2>
+            
+            <div class="search-bar">
+                <input type="text" id="search-input" placeholder="Search by subject, description, or name...">
+                <button id="search-button">Search</button>
+            </div>
+            
+            <ul id="search-results" class="ticket-list">
+                <!-- Search results will be displayed here -->
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Data storage
+        let tickets = JSON.parse(localStorage.getItem('tickets')) || [];
+        
+        // DOM Elements
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const ticketForm = document.getElementById('ticket-form');
+        const ticketList = document.getElementById('ticket-list');
+        const searchInput = document.getElementById('search-input');
+        const searchButton = document.getElementById('search-button');
+        const searchResults = document.getElementById('search-results');
+        const statusFilter = document.getElementById('status-filter');
+        const priorityFilter = document.getElementById('priority-filter');
+        const departmentFilter = document.getElementById('department-filter');
+        
+        // Initialize the application
+        function init() {
+            // Set up tab navigation
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const tab = button.getAttribute('data-tab');
+                    
+                    // Update active tab button
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    
+                    // Update active tab content
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    document.getElementById(tab).classList.add('active');
+                    
+                    // If viewing tickets, refresh the list
+                    if (tab === 'tickets') {
+                        displayTickets();
+                    }
+                });
+            });
+            
+            // Handle form submission
+            ticketForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Create new ticket
+                const newTicket = {
+                    id: Date.now(), // Unique ID based on timestamp
+                    name: document.getElementById('name').value,
+                    email: document.getElementById('email').value,
+                    department: document.getElementById('department').value,
+                    priority: document.getElementById('priority').value,
+                    subject: document.getElementById('subject').value,
+                    description: document.getElementById('description').value,
+                    status: 'open',
+                    date: new Date().toLocaleString()
+                };
+                
+                // Add to tickets array
+                tickets.push(newTicket);
+                
+                // Save to localStorage
+                localStorage.setItem('tickets', JSON.stringify(tickets));
+                
+                // Reset form
+                ticketForm.reset();
+                
+                // Show confirmation
+                alert('Ticket submitted successfully! Your ticket ID is: ' + newTicket.id);
+                
+                // Switch to tickets tab
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                document.querySelector('[data-tab="tickets"]').classList.add('active');
+                tabContents.forEach(content => content.classList.remove('active'));
+                document.getElementById('tickets').classList.add('active');
+                
+                // Refresh ticket list
+                displayTickets();
+            });
+            
+            // Set up search
+            searchButton.addEventListener('click', performSearch);
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    performSearch();
+                }
+            });
+            
+            // Set up filters
+            statusFilter.addEventListener('change', displayTickets);
+            priorityFilter.addEventListener('change', displayTickets);
+            departmentFilter.addEventListener('change', displayTickets);
+            
+            // Display initial tickets if any
+            if (tickets.length > 0) {
+                displayTickets();
+            }
+        }
+        
+        // Display tickets in the list
+        function displayTickets() {
+            const statusValue = statusFilter.value;
+            const priorityValue = priorityFilter.value;
+            const departmentValue = departmentFilter.value;
+            
+            // Filter tickets based on selections
+            const filteredTickets = tickets.filter(ticket => {
+                return (statusValue === 'all' || ticket.status === statusValue) &&
+                       (priorityValue === 'all' || ticket.priority === priorityValue) &&
+                       (departmentValue === 'all' || ticket.department === departmentValue);
+            });
+            
+            // Clear current list
+            ticketList.innerHTML = '';
+            
+            // Check if there are tickets to display
+            if (filteredTickets.length === 0) {
+                ticketList.innerHTML = '<li class="ticket-item">No tickets found.</li>';
+                return;
+            }
+            
+            // Add tickets to the list
+            filteredTickets.forEach(ticket => {
+                const li = document.createElement('li');
+                li.className = `ticket-item priority-${ticket.priority}`;
+                
+                li.innerHTML = `
+                    <div class="ticket-info">
+                        <h3>${ticket.subject} (ID: ${ticket.id})</h3>
+                        <div class="ticket-meta">
+                            <strong>${ticket.name}</strong> (${ticket.department}) - ${ticket.date}
+                        </div>
+                        <p>${ticket.description}</p>
+                    </div>
+                    <div class="ticket-status status-${ticket.status}">${ticket.status}</div>
+                `;
+                
+                ticketList.appendChild(li);
+            });
+        }
+        
+        // Perform search
+        function performSearch() {
+            const query = searchInput.value.toLowerCase();
+            
+            // Clear previous results
+            searchResults.innerHTML = '';
+            
+            if (!query) {
+                searchResults.innerHTML = '<li class="ticket-item">Please enter a search term.</li>';
+                return;
+            }
+            
+            // Search tickets
+            const results = tickets.filter(ticket => {
+                return ticket.subject.toLowerCase().includes(query) ||
+                       ticket.description.toLowerCase().includes(query) ||
+                       ticket.name.toLowerCase().includes(query);
+            });
+            
+            // Display results
+            if (results.length === 0) {
+                searchResults.innerHTML = '<li class="ticket-item">No tickets found.</li>';
+                return;
+            }
+            
+            results.forEach(ticket => {
+                const li = document.createElement('li');
+                li.className = `ticket-item priority-${ticket.priority}`;
+                
+                li.innerHTML = `
+                    <div class="ticket-info">
+                        <h3>${ticket.subject} (ID: ${ticket.id})</h3>
+                        <div class="ticket-meta">
+                            <strong>${ticket.name}</strong> (${ticket.department}) - ${ticket.date}
+                        </div>
+                        <p>${ticket.description}</p>
+                    </div>
+                    <div class="ticket-status status-${ticket.status}">${ticket.status}</div>
+                `;
+                
+                searchResults.appendChild(li);
+            });
+        }
+        
+        // Initialize the app when the DOM is loaded
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
