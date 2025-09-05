@@ -1,0 +1,91 @@
+{% extends 'tickets/base.html' %}
+
+{% block content %}
+<h2>Admin Dashboard</h2>
+
+<div class="row mb-4">
+    <div class="col-md-2">
+        <div class="card text-white bg-primary">
+            <div class="card-body text-center">
+                <h5>Total Tickets</h5>
+                <h3>{{ total_tickets }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card text-white bg-info">
+            <div class="card-body text-center">
+                <h5>Open</h5>
+                <h3>{{ open_tickets }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card text-white bg-warning">
+            <div class="card-body text-center">
+                <h5>In Progress</h5>
+                <h3>{{ in_progress_tickets }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card text-white bg-success">
+            <div class="card-body text-center">
+                <h5>Resolved</h5>
+                <h3>{{ resolved_tickets }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card text-white bg-secondary">
+            <div class="card-body text-center">
+                <h5>Closed</h5>
+                <h3>{{ closed_tickets }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h4>Recent Tickets</h4>
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Status</th>
+                <th>Priority</th>
+                <th>Created By</th>
+                <th>Created</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ticket in recent_tickets %}
+            <tr>
+                <td>{{ ticket.title }}</td>
+                <td>
+                    <span class="badge bg-{% if ticket.status == 'open' %}primary{% elif ticket.status == 'in_progress' %}warning{% elif ticket.status == 'resolved' %}success{% else %}secondary{% endif %}">
+                        {{ ticket.get_status_display }}
+                    </span>
+                </td>
+                <td>
+                    <span class="badge bg-{% if ticket.priority == 'low' %}info{% elif ticket.priority == 'medium' %}primary{% elif ticket.priority == 'high' %}warning{% else %}danger{% endif %}">
+                        {{ ticket.get_priority_display }}
+                    </span>
+                </td>
+                <td>{{ ticket.created_by.username }}</td>
+                <td>{{ ticket.created_at|date:"M d, Y" }}</td>
+                <td>
+                    <a href="{% url 'ticket_detail' ticket.pk %}" class="btn btn-sm btn-info">View</a>
+                    <a href="{% url 'update_ticket' ticket.pk %}" class="btn btn-sm btn-warning">Update</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center">No tickets found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

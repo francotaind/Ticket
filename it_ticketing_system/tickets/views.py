@@ -1,0 +1,110 @@
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.views.generic import ListView, DetailView
+from django.contrib import messages
+from .models import Ticket, TicketComment, TicketAttachment
+from .forms import TicketForm, TicketUpdateForm, CommentForm, AttachmentForm
+
+def is_it_staff(user):
+    return user.groups.filter(name='IT Staff').exists()
+
+@login_required
+def create_ticket(request):
+    if request.method == 'POST':
+        form = TicketForm(request.POST)
+        if form.is_valid():
+            ticket = form.save(commit=False)
+            ticket.created_by = request.user
+            ticket.save()
+            messages.success(request, 'Ticket created successfully!')
+            return redirect('ticket_detail', pk=ticket.pk)
+    else:
+        form = TicketForm()
+    return render(request, 'tickets/create_ticket.html', {'form': form})
+
+class TicketListView(LoginRequiredMixin, ListView):
+    model = Ticket
+    template_name = 'tickets/ticket_list.html'
+    context_object_name = 'tickets'
+    
+    def get_queryset(self):
+        if is_it_staff(self.request.user):
+            return Ticket.objects.all().order_by('-created_at')
+        else:
+            return Ticket.objects.filter(created_by=self.request.user).order_by('-created_at')
+
+class TicketDetailView(LoginRequiredMixin, DetailView):
+    model = Ticket
+    template_name = 'tickets/ticket_detail.html'
+    context_object_name = 'ticket'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['comment_form'] = CommentForm()
+        context['attachment_form'] = AttachmentForm()
+        return context
+    
+    def post(self, request, *args, **kwargs):
+        ticket = self.get_object()
+        
+        # Check if user has permission to view this ticket
+        if not (request.user == ticket.created_by or is_it_staff(request.user)):
+            messages.error(request, 'You do not have permission to view this ticket.')
+            return redirect('ticket_list')
+        
+        if 'add_comment' in request.POST:
+            comment_form = CommentForm(request.POST)
+            if comment_form.is_valid():
+                comment = comment_form.save(commit=False)
+                comment.ticket = ticket
+                comment.author = request.user
+                comment.save()
+                messages.success(request, 'Comment added successfully!')
+        
+        elif 'add_attachment' in request.POST:
+            attachment_form = AttachmentForm(request.POST, request.FILES)
+            if attachment_form.is_valid():
+                attachment = attachment_form.save(commit=False)
+                attachment.ticket = ticket
+                attachment.uploaded_by = request.user
+                attachment.save()
+                messages.success(request, 'Attachment uploaded successfully!')
+        
+        return redirect('ticket_detail', pk=ticket.pk)
+
+@login_required
+@user_passes_test(is_it_staff)
+def update_ticket(request, pk):
+    ticket = get_object_or_404(Ticket, pk=pk)
+    
+    if request.method == 'POST':
+        form = TicketUpdateForm(request.POST, instance=ticket)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Ticket updated successfully!')
+            return redirect('ticket_detail', pk=ticket.pk)
+    else:
+        form = TicketUpdateForm(instance=ticket)
+    
+    return render(request, 'tickets/update_ticket.html', {'form': form, 'ticket': ticket})
+
+@login_required
+@user_passes_test(is_it_staff)
+def admin_dashboard(request):
+    tickets = Ticket.objects.all()
+    open_tickets = tickets.filter(status='open')
+    in_progress_tickets = tickets.filter(status='in_progress')
+    resolved_tickets = tickets.filter(status='resolved')
+    closed_tickets = tickets.filter(status='closed')
+    
+    context = {
+        'total_tickets': tickets.count(),
+        'open_tickets': open_tickets.count(),
+        'in_progress_tickets': in_progress_tickets.count(),
+        'resolved_tickets': resolved_tickets.count(),
+        'closed_tickets': closed_tickets.count(),
+        'recent_tickets': tickets.order_by('-created_at')[:10],
+    }
+    
+    return render(request, 'tickets/admin_dashboard.html', context)
