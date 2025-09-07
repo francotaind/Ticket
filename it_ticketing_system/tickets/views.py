@@ -16,12 +16,19 @@ def create_ticket(request):
         if form.is_valid():
             ticket = form.save(commit=False)
             ticket.created_by = request.user
+            
+            # Only IT staff can assign tickets to others during creation
+            if not (request.user.is_staff or is_it_staff(request.user)):
+                ticket.assigned_to = None  # Or assign to default IT person
+            
             ticket.save()
             messages.success(request, 'Ticket created successfully!')
             return redirect('ticket_detail', pk=ticket.pk)
     else:
         form = TicketForm()
+    
     return render(request, 'tickets/create_ticket.html', {'form': form})
+
 
 class TicketListView(LoginRequiredMixin, ListView):
     model = Ticket
@@ -108,3 +115,15 @@ def admin_dashboard(request):
     }
     
     return render(request, 'tickets/admin_dashboard.html', context)
+
+@login_required
+@user_passes_test(is_it_staff)
+def assign_to_me(request, pk):
+    ticket = get_object_or_404(Ticket, pk=pk)
+    ticket.assigned_to = request.user
+    ticket.status = 'in_progress'
+    ticket.save()
+    messages.success(request, f'Ticket assigned to you and status changed to In Progress!')
+    return redirect('ticket_detail', pk=ticket.pk)
+
+

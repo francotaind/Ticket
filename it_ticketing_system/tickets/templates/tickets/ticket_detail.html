@@ -61,6 +61,28 @@
     </div>
 
     <div class="col-md-4">
+        <!-- Assign to Me Button Card -->
+        {% if user.is_staff or user.groups.all.0.name == 'IT Staff' %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>IT Actions</h5>
+            </div>
+            <div class="card-body">
+                <a href="{% url 'assign_to_me' ticket.pk %}" class="btn btn-info w-100 mb-2">
+                    <i class="bi bi-person-check"></i> Assign to Me
+                </a>
+                <a href="{% url 'update_ticket' ticket.pk %}" class="btn btn-warning w-100 mb-2">
+                    <i class="bi bi-pencil"></i> Update Ticket
+                </a>
+                {% if ticket.assigned_to %}
+                <div class="text-center mt-2">
+                    <small>Currently assigned to: <strong>{{ ticket.assigned_to.username }}</strong></small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
         <div class="card mb-4">
             <div class="card-header">
                 <h5>Attachments</h5>

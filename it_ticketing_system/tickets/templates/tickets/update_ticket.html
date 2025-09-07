@@ -1,0 +1,49 @@
+<!-- tickets/update_ticket.html -->
+{% extends 'tickets/base.html' %}
+
+{% block title %}Update Ticket - IT Ticketing System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-warning">
+                <h4 class="mb-0">Update Ticket: {{ ticket.title }}</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="id_status" class="form-label">Status</label>
+                        {{ form.status }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_priority" class="form-label">Priority</label>
+                        {{ form.priority }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_assigned_to" class="form-label">Assign To</label>
+                        {{ form.assigned_to }}
+                        <div class="form-text">Only IT staff members are shown in this list.</div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'ticket_detail' ticket.pk %}" class="btn btn-secondary me-md-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Update Ticket</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Add Bootstrap classes to form fields
+    document.getElementById('id_status').classList.add('form-select');
+    document.getElementById('id_priority').classList.add('form-select');
+    document.getElementById('id_assigned_to').classList.add('form-select');
+</script>
+{% endblock %}
