@@ -6,9 +6,9 @@ from tickets import views
 
 urlpatterns = [
     path('admin/dashboard/', views.admin_dashboard, name='admin_dashboard'),
+     path('admin/delete-closed-tickets/', views.bulk_delete_closed_tickets, name='bulk_delete_closed'),
     path('admin/', admin.site.urls),
     path('', include('tickets.urls')),  # Include tickets app URLs
-    path('accounts/login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
-    path('accounts/logout/',
-         auth_views.LogoutView.as_view(template_name='registration/logged_out.html'), name='logout'),
+    path('login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
+    path('logout/', auth_views.LogoutView.as_view(template_name='registration/logged_out.html'), name='logout'),
 ]

@@ -105,6 +105,28 @@
                 </form>
             </div>
         </div>
+
+        {% if user.is_staff or user.groups.all.0.name == 'IT Staff' %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">Danger Zone</h5>
+            </div>
+            <div class="card-body">
+                {% if ticket.status == 'closed' %}
+                <form method="post" action="{% url 'delete_ticket' ticket.pk %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger" 
+                            onclick="return confirm('Are you sure you want to delete this closed ticket? This action cannot be undone.')">
+                        <i class="bi bi-trash"></i> Delete Ticket
+                    </button>
+                </form>
+                {% else %}
+                <p class="text-muted">Ticket must be closed before it can be deleted.</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}
+

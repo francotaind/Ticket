@@ -63,5 +63,21 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Enhanced confirmation for delete actions -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const deleteForms = document.querySelectorAll('form[action*="delete"]');
+        
+        deleteForms.forEach(form => {
+            form.addEventListener('submit', function(e) {
+                if (!confirm('Are you sure you want to delete this? This action cannot be undone.')) {
+                    e.preventDefault();
+                }
+            });
+        });
+    });
+    </script>
 </body>
 </html>
+

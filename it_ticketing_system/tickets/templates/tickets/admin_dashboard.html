@@ -46,7 +46,27 @@
     </div>
 </div>
 
-<h4>Recent Tickets</h4>
+<!-- Maintenance Card -->
+<div class="card mt-4">
+    <div class="card-header bg-warning">
+        <h5 class="mb-0">Maintenance</h5>
+    </div>
+    <div class="card-body">
+        <p>Closed tickets: <strong>{{ closed_tickets }}</strong></p>
+        <form method="post" action="{% url 'bulk_delete_closed' %}" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger" 
+                    onclick="return confirm('Are you sure you want to delete ALL closed tickets? This action cannot be undone.')">
+                <i class="bi bi-trash"></i> Delete All Closed Tickets
+            </button>
+        </form>
+        <small class="form-text text-muted">
+            This will permanently delete all tickets with "Closed" status.
+        </small>
+    </div>
+</div>
+
+<h4 class="mt-5">Recent Tickets</h4>
 <div class="table-responsive">
     <table class="table table-striped">
         <thead>
@@ -89,3 +109,4 @@
     </table>
 </div>
 {% endblock %}
+

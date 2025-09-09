@@ -5,6 +5,9 @@ from django.views.generic import ListView, DetailView
 from django.contrib import messages
 from .models import Ticket, TicketComment, TicketAttachment
 from .forms import TicketForm, TicketUpdateForm, CommentForm, AttachmentForm
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+
 
 def is_it_staff(user):
     return user.groups.filter(name='IT Staff').exists()
@@ -125,5 +128,42 @@ def assign_to_me(request, pk):
     ticket.save()
     messages.success(request, f'Ticket assigned to you and status changed to In Progress!')
     return redirect('ticket_detail', pk=ticket.pk)
+
+
+@login_required
+@user_passes_test(is_it_staff)
+def delete_ticket(request, pk):
+    ticket = get_object_or_404(Ticket, pk=pk)
+    
+    if not ticket.is_closed:
+        messages.error(request, 'Only closed tickets can be deleted.')
+        return redirect('ticket_detail', pk=ticket.pk)
+    
+    if request.method == 'POST':
+        ticket.is_deleted = True
+        ticket.deleted_at = timezone.now()
+        ticket.deleted_by = request.user
+        ticket.save()
+        messages.success(request, f'Ticket "{ticket.title}" has been archived.')
+        return redirect('ticket_list')
+
+# Optional: Bulk delete closed tickets
+@login_required
+@user_passes_test(is_it_staff)
+def bulk_delete_closed_tickets(request):
+    if request.method == 'POST':
+        closed_tickets = Ticket.objects.filter(status='closed')
+        count = closed_tickets.count()
+        
+        if count > 0:
+            closed_tickets.delete()
+            messages.success(request, f'Successfully deleted {count} closed tickets.')
+        else:
+            messages.info(request, 'No closed tickets to delete.')
+        
+        return redirect('admin_dashboard')
+    
+    return redirect('admin_dashboard')
+
 
 

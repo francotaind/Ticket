@@ -27,6 +27,9 @@ class Ticket(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     resolved_at = models.DateTimeField(null=True, blank=True)
     closed_at = models.DateTimeField(null=True, blank=True)
+    is_deleted = models.BooleanField(default=False)  # Soft delete flag
+    deleted_at = models.DateTimeField(null=True, blank=True)
+    deleted_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='deleted_tickets')
     
     def __str__(self):
         return f"{self.title} - {self.get_status_display()}"
@@ -37,6 +40,24 @@ class Ticket(models.Model):
         elif self.status == 'closed' and not self.closed_at:
             self.closed_at = timezone.now()
         super().save(*args, **kwargs)
+
+    @property
+    def is_closed(self):
+        return self.status == 'closed'
+
+    def can_delete(self, user):
+        """check if user can delete the ticket"""
+        return (user.is_staff or user.groups.filter(name='IT Staff').exists()) and self.is_closed
+
+    def delete(self, user=None, *args, **kwargs):
+        """Soft delete the ticket"""
+        self.is_deleted = True
+        self.deleted_at = timezone.now()
+        self.save()
+
+    def hard_delete(self):
+        """Permanently delete the ticket"""
+        super().delete()
 
 class TicketComment(models.Model):
     ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE, related_name='comments')
